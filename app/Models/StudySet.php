@@ -12,14 +12,21 @@ class StudySet extends Model
     protected $fillable=[
         'title',
         'description',
-        'image_url'
+        'image_url',
     ];
 
+    public function owner() {
+        return $this->belongsTo(User::class, 'owner_id', 'id');
+    }
     public function terms(){
         return $this->hasMany(Term::class,'study_set_id','id');
     }
 
     public function study_set_tests(){
         return $this->hasMany(StudySetTest::class,'study_set_id','id');
+    }
+
+    public function course() {
+        return $this->belongsTo(Course::class, 'course_id', 'id');
     }
 }

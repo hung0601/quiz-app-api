@@ -31,6 +31,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verified_at'
     ];
 
     /**
@@ -42,4 +43,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    public function courses() {
+        return $this->hasMany(Course::class, 'owner_id', 'id');
+    }
+    public function study_sets() {
+        return $this->hasMany(StudySet::class, 'owner_id', 'id');
+    }
+    public function enrollments() {
+        return $this->hasMany(Enrollment::class, 'user_id', 'id');
+    }
+    public function enrollRequests() {
+        return $this->hasMany(EnrollmentRequest::class, 'participant_id', 'id');
+    }
 }
