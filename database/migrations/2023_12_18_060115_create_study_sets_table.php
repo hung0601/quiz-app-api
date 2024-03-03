@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->string('image_url');
+            $table->string('term_lang')->default('en');
+            $table->string('def_lang')->default('en');
             $table->unsignedBigInteger('course_id')->nullable();
             $table->unsignedBigInteger('owner_id');
             $table->timestamps();
@@ -70,8 +72,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('enrollment_requests');
+        Schema::dropIfExists('enrollments');
         Schema::dropIfExists('courses');
         Schema::dropIfExists('study_sets');
-        Schema::dropIfExists('enrollments');
     }
 };

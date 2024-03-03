@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             EnrollmentSeeder::class,
             StudySetSeeder::class,
             TermSeeder::class,
+            TopicSeeder::class
         ]);
     }
 }

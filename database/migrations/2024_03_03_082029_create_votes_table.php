@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('terms', function (Blueprint $table) {
-            $table->id();
+        Schema::create('votes', function (Blueprint $table) {
             $table->unsignedBigInteger('study_set_id');
-            $table->string('term');
-            $table->text('definition');
-            $table->string('image_url')->nullable();
-            $table->timestamps();
+            $table->unsignedBigInteger('user_id');
+            $table->primary(['study_set_id', 'user_id']);
+            $table->integer('star');
 
-            
             $table->foreign('study_set_id')
-                ->references('id')
-                ->on('study_sets');
+            ->references('id')
+            ->on('study_sets');
+            $table->foreign('user_id')
+            ->references('id')
+            ->on('users');
+            $table->timestamps();
         });
     }
 
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('terms');
+        Schema::dropIfExists('votes');
     }
 };
