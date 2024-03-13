@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('votes', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('study_set_id');
             $table->unsignedBigInteger('user_id');
-            $table->primary(['study_set_id', 'user_id']);
+            $table->unique(['study_set_id', 'user_id']);
             $table->integer('star');
 
             $table->foreign('study_set_id')

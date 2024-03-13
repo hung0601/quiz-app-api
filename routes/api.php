@@ -7,7 +7,9 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudySetController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,7 +33,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('exam')->group(function () {
         Route::get('/', [TestController::class, 'index'])
             ->name('exam.index');
-            
+
+    });
+    Route::prefix('vote')->group(function () {
+        Route::post('/', [VoteController::class, 'vote'])
+            ->name('vote.add');
+
+    });
+    Route::prefix('topic')->group(function () {
+//        Route::get('/', [TopicController::class, 'index'])
+//            ->name('topic.index');
+        Route::get('/', [TopicController::class, 'search'])
+            ->name('topic.index');
+        Route::post('/', [TopicController::class, 'store'])
+            ->name('topic.store');
     });
     Route::prefix('study_sets')->group(function () {
         Route::get('/', [StudySetController::class, 'index'])
@@ -60,7 +75,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('courses.invite');
         Route::post('/accept_invite', [InviteRequestController::class, 'acceptInvite'])
             ->name('courses.accept_invite');
-            
+
     });
     Route::get('/search_users', [InviteRequestController::class, 'searchUser'])
             ->name('courses.searchUser');

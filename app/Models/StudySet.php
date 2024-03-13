@@ -29,15 +29,12 @@ class StudySet extends Model
     public function course() {
         return $this->belongsTo(Course::class, 'course_id', 'id');
     }
-    public function set_topics()
+    public function topics()
     {
-        return $this->hasManyThrough(
-            StudySetTopic::class,
-            Topic::class,
-            'study_set_id', // Foreign key on the environments table...
-            'topic_id', // Foreign key on the deployments table...
-            'id', // Local key on the projects table...
-            'id' // Local key on the environments table...
-        );
+        return $this->belongsToMany(Topic::class, 'study_set_topics');
+    }
+
+    public function votes(){
+        return $this->hasMany(Vote::class,'study_set_id','id');
     }
 }

@@ -50,7 +50,7 @@ return new class extends Migration
             $table->foreign('user_id')
             ->references('id')
             ->on('users');
-            
+
         });
         Schema::create('enrollment_requests', function(Blueprint $table){
             $table->unsignedBigInteger('course_id');
@@ -74,7 +74,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('enrollment_requests');
         Schema::dropIfExists('enrollments');
-        Schema::dropIfExists('courses');
         Schema::dropIfExists('study_sets');
+        Schema::dropIfExists('courses');
     }
 };
