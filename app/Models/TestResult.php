@@ -11,7 +11,8 @@ class TestResult extends Model
     protected $fillable=[
         'question_id',
         'user_id',
-        'selected_answer_id'
+        'selected_answer',
+        'is_correct'
     ];
 
     public function question() {

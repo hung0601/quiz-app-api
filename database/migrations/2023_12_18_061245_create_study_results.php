@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('term_id');
             $table->unsignedBigInteger('user_id');
+            $table->integer('correct_string');
             $table->integer('status');
             $table->timestamps();
 

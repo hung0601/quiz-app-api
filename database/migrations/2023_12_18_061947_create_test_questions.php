@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('test_id');
             $table->unsignedBigInteger('term_referent_id');
-            $table->string('question');
+            $table->boolean("has_audio")->default(false);
+            $table->text("audio_text")->nullable();
+            $table->string("audio_lang")->nullable();
+            $table->morphs("question");
             $table->integer('point');
-            $table->integer('type');
             $table->timestamps();
 
             $table->foreign('test_id')
@@ -28,6 +30,28 @@ return new class extends Migration
             ->references('id')
             ->on('terms');
         });
+
+        Schema::create('quiz_questions', function (Blueprint $table) {
+            $table->id();
+            $table->string("question");
+            $table->json("answers");
+            $table->integer('correct_answer');
+            $table->timestamps();
+        });
+
+        Schema::create('true_false_questions', function (Blueprint $table) {
+            $table->id();
+            $table->string("question");
+            $table->boolean('correct_answer');
+            $table->timestamps();
+        });
+
+        Schema::create('type_answer_questions', function (Blueprint $table) {
+            $table->id();
+            $table->string("question");
+            $table->string('correct_answer');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -36,5 +60,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('test_questions');
+        Schema::dropIfExists('quiz_questions');
+        Schema::dropIfExists('true_false_questions');
+        Schema::dropIfExists('type_answer_questions');
     }
 };

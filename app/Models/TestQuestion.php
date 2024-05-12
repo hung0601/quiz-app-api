@@ -11,9 +11,13 @@ class TestQuestion extends Model
     protected $fillable=[
         'test_id',
         'term_referent_id',
+        'has_audio',
+        'audio_text',
+        'audio_lang',
         'question',
+        'question_type',
+        'question_id',
         'point',
-        'type'
     ];
 
     public function study_set_test() {
@@ -22,7 +26,9 @@ class TestQuestion extends Model
     public function term_referent() {
         return $this->belongsTo(Term::class, 'term_referent_id', 'id');
     }
-    public function answers(){
-        return $this->hasMany(Answer::class,'question_id','id');
+
+    public function question()
+    {
+        return $this->morphTo();
     }
 }

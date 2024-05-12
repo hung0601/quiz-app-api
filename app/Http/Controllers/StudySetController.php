@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StudySet\StudySetDetailResource;
 use App\Models\StudySet;
 use App\Models\StudySetTopic;
-use App\Models\Topic;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
+use function response;
 
 class StudySetController extends Controller
 {
@@ -29,7 +30,7 @@ class StudySetController extends Controller
             ->where('owner_id', $user->id)
             ->union($enrollmentSets)
             ->get();
-        return $studySets;
+        return response()->json($studySets);
     }
 
     // set not belong to any course
@@ -44,12 +45,19 @@ class StudySetController extends Controller
         return $studySets;
     }
 
-    public function show($id)
+    public function show(Request $request, string $id)
     {
-        $studySet = StudySet::with(['owner', 'terms'])
-            ->with(['topics'])
+        $studySet = StudySet::with(['owner', 'topics'])
+            ->with(['terms' => function ($query) use ($request) {
+                $query->with(['study_results' => function ($query) use ($request) {
+                    $query->where('user_id', $request->user()->id);
+                }]);
+            }])
+            ->withCount('votes as vote_count')
             ->withAvg('votes', 'star')->find($id);
-        return $studySet;
+        if($request->user()->id != $studySet->owner_id) $studySet->permission=false;
+        else $studySet->permission=true;
+        return response()->json(new StudySetDetailResource($studySet));
     }
 
     public function delete($id)
@@ -66,21 +74,24 @@ class StudySetController extends Controller
             $request->validate([
                 'title' => 'required',
                 'description' => 'required',
-                'image' => 'required|mimes:jpeg,png,jpg,gif',
+                'image' => 'mimes:jpeg,png,jpg,gif',
                 'topic_ids' => 'array',
                 'topic_ids.*' => 'integer|exists:topics,id',
             ]);
-            $image = $request->file('image');
-            $path = $image->move('storage/study_sets', $image->hashName());
-            $image_url = asset($path);
             $set = new StudySet;
             $set->title = $request->title;
             $set->description = $request->description;
             $set->owner_id = $user->id;
-            $set->image_url = $image_url;
+            $set->image_url=null;
+            $image= $request->file('image');
+            if(!empty($image)){
+                $path=$image->move('storage/study_sets', $image->hashName());
+                $image_url= asset($path);
+                $set->image_url=$image_url;
+            }
             if ($request->course_id) $set->course_id = (int)$request->course_id;
             $set->save();
-            if(count($request->topic_ids)>0){
+            if(!empty($request->topic_ids) && count($request->topic_ids)>0){
                 foreach ($request->topic_ids as $topic_id){
                     StudySetTopic::create([
                         'topic_id'=>$topic_id,

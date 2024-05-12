@@ -10,6 +10,7 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoteController;
+use App\Models\StudySetTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Route::get('/test', function (Request $request) {
+    return 'ok';
+})->name('test');
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('user')->group(function () {
         Route::get('/profile', [UserController::class, 'profile'])
@@ -31,8 +36,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('user.top_creators');
     });
     Route::prefix('exam')->group(function () {
+        Route::get('/{id}', [TestController::class, 'show'])
+            ->name('exam.show');
+        Route::post('/{id}/submit', [TestController::class, 'submitExam'])
+            ->name('exam.submit');
         Route::get('/', [TestController::class, 'index'])
             ->name('exam.index');
+        Route::post('/study_results', [TestController::class, 'storeStudyResults'])
+            ->name('exam.storeStudyResult');
 
     });
     Route::prefix('vote')->group(function () {
@@ -87,6 +98,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('terms')->group(function () {
         Route::post('/', [TermController::class, 'store'])
         ->name('terms.store');
+        Route::post('/multi_save', [TermController::class, 'multiStore'])
+            ->name('terms.store');
+        Route::put('/', [TermController::class, 'update'])
+            ->name('terms.update');
     });
 });
 

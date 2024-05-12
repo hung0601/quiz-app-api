@@ -12,8 +12,12 @@ class StudyResult extends Model
     protected $fillable=[
         'term_id',
         'user_id',
+        'correct_string',
         'status'
     ];
+    const NOT_STUDIED = 0;
+    const STILL_LEARNING = 1;
+    const MASTERED = 2;
 
     public function term()
     {

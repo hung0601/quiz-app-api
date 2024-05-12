@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('question_id');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('selected_answer_id');
+            $table->boolean('is_correct');
+            $table->string('selected_answer');
             $table->timestamps();
 
             $table->foreign('question_id')
@@ -25,10 +26,6 @@ return new class extends Migration
             $table->foreign('user_id')
             ->references('id')
             ->on('users');
-
-            $table->foreign('selected_answer_id')
-            ->references('id')
-            ->on('answers');
         });
     }
 

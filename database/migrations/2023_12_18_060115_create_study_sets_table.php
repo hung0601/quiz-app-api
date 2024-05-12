@@ -25,7 +25,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
-            $table->string('image_url');
+            $table->string('image_url')->nullable();
             $table->string('term_lang')->default('en');
             $table->string('def_lang')->default('en');
             $table->unsignedBigInteger('course_id')->nullable();
