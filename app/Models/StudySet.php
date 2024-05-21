@@ -22,8 +22,8 @@ class StudySet extends Model
         return $this->hasMany(Term::class,'study_set_id','id');
     }
 
-    public function study_set_tests(){
-        return $this->hasMany(StudySetTest::class,'study_set_id','id');
+    public function exams(){
+        return $this->hasMany(StudySetTest::class,'study_set_id','id')->withCount('questions as question_count');
     }
 
     public function course() {

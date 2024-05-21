@@ -24,7 +24,7 @@ class TestSeeder extends Seeder
         $questionType1 = QuizQuestion::create([
             'question' => "Result of : 1+ 1 ?",
             'answers' => json_encode(["A. 1", "B. 2", "C. 3", "D. 4"]),
-            'correct_answer' => 2,
+            'correct_answer' => 1,
         ]);
         $questionType2 = TrueFalseQuestion::create([
             'question' => "1+ 1 = 2 ?",

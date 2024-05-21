@@ -16,7 +16,7 @@ class VoteController extends Controller
                 'study_set_id' => 'required',
                 'star' => 'required|numeric|max:5|min:1'
             ]);
-            StudySet::findOrFail((int) $request->study_set_id);
+            $set = StudySet::findOrFail((int) $request->study_set_id);
             $vote = Vote::updateOrCreate(
                 [
                     'study_set_id' => $request->study_set_id,
@@ -26,7 +26,7 @@ class VoteController extends Controller
                     'star' => $request->star,
                 ]
             );
-            return $vote;
+            return $set->loadAvg('votes', 'star')->votes_avg_star;
         } catch (\Exception $error) {
             return response()->json([
                 'message' => $error->getMessage(),

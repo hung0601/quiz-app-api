@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('test_results', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('question_id');
+            $table->unsignedBigInteger('question_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->boolean('is_correct');
             $table->string('selected_answer');
@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->foreign('question_id')
             ->references('id')
-            ->on('test_questions');
+            ->on('test_questions')->onDelete('set null');
 
             $table->foreign('user_id')
             ->references('id')

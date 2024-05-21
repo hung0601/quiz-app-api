@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class TestQuestion extends Model
 {
     use HasFactory;
+    const MULTIPLE_CHOICE_QUESTION = "App\\Models\\QuizQuestion";
+    const TYPE_ANSWER_QUESTION = "App\\Models\\TypeAnswerQuestion";
+    const TRUE_FALSE_QUESTION = "App\\Models\\TrueFalseQuestion";
     protected $fillable=[
         'test_id',
         'term_referent_id',

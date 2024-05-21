@@ -14,8 +14,7 @@ class StudySetController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $enrollmentSets = StudySet::with(['owner'])
-            ->with(['topics'])
+        $enrollmentSets = StudySet::with(['owner','topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
             ->whereHas('course', function (Builder $query) use ($user) {
@@ -23,8 +22,7 @@ class StudySetController extends Controller
                     $query->where('user_id', $user->id);
                 });
             });
-        $studySets = StudySet::with(['owner'])
-            ->with(['topics'])
+        $studySets = StudySet::with(['owner','topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
             ->where('owner_id', $user->id)
@@ -47,7 +45,7 @@ class StudySetController extends Controller
 
     public function show(Request $request, string $id)
     {
-        $studySet = StudySet::with(['owner', 'topics'])
+        $studySet = StudySet::with(['owner', 'topics','exams'])
             ->with(['terms' => function ($query) use ($request) {
                 $query->with(['study_results' => function ($query) use ($request) {
                     $query->where('user_id', $request->user()->id);
@@ -75,6 +73,8 @@ class StudySetController extends Controller
                 'title' => 'required',
                 'description' => 'required',
                 'image' => 'mimes:jpeg,png,jpg,gif',
+                'term_lang' => 'string|nullable',
+                'def_lang' => 'string|nullable',
                 'topic_ids' => 'array',
                 'topic_ids.*' => 'integer|exists:topics,id',
             ]);
@@ -83,6 +83,8 @@ class StudySetController extends Controller
             $set->description = $request->description;
             $set->owner_id = $user->id;
             $set->image_url=null;
+            if($request->term_lang) $set->term_lang = $request->term_lang;
+            if($request->def_lang) $set->def_lang = $request->def_lang;
             $image= $request->file('image');
             if(!empty($image)){
                 $path=$image->move('storage/study_sets', $image->hashName());

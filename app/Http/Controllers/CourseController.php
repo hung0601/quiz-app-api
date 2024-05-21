@@ -22,13 +22,13 @@ class CourseController extends Controller
         ->where('owner_id',$user->id)
         ->union($enrollmentCourses)
         ->get();
-        
+
         return $courses;
     }
     public function show($id)
     {
         $course= Course::with(['owner','study_sets','enrollments.user'])->find($id);
-        $course->study_sets->load('owner')->loadCount('terms as term_number');
+        $course->study_sets->load(['owner','topics'])->loadAvg('votes', 'star')->loadCount('terms as term_number');
         return $course;
     }
     public function delete($id)
@@ -56,7 +56,7 @@ class CourseController extends Controller
                 'message' => $error->getMessage(),
             ],400);
         }
-        
+
     }
 
     public function addStudySet(Request $request){

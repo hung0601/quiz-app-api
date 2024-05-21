@@ -35,7 +35,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/top_creators', [UserController::class, 'topCreators'])
             ->name('user.top_creators');
     });
+
+    //Exam
     Route::prefix('exam')->group(function () {
+        Route::post('/', [TestController::class, 'create'])
+            ->name('exam.create');
         Route::get('/{id}', [TestController::class, 'show'])
             ->name('exam.show');
         Route::post('/{id}/submit', [TestController::class, 'submitExam'])
@@ -44,13 +48,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('exam.index');
         Route::post('/study_results', [TestController::class, 'storeStudyResults'])
             ->name('exam.storeStudyResult');
+        Route::post('/{id}', [TestController::class, 'addQuestions'])
+            ->name('exam.addQuestions');
 
     });
+
+    //Question
+    Route::prefix('question')->group(function () {
+        Route::put('/{id}', [TestController::class, 'updateQuestion'])
+            ->name('question.update');
+        Route::delete('/{id}', [TestController::class, 'deleteQuestion'])
+            ->name('question.delete');
+    });
+
+    //Vote
     Route::prefix('vote')->group(function () {
         Route::post('/', [VoteController::class, 'vote'])
             ->name('vote.add');
 
     });
+
+    //Topic
     Route::prefix('topic')->group(function () {
 //        Route::get('/', [TopicController::class, 'index'])
 //            ->name('topic.index');
@@ -71,6 +89,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', [StudySetController::class, 'delete'])
             ->name('study_sets.delete');
     });
+
     Route::prefix('courses')->group(function () {
         Route::get('/', [CourseController::class, 'index'])
             ->name('courses.list');

@@ -32,6 +32,7 @@ class StudySetDetailResource extends JsonResource
             'owner' => $this->owner,
             'topics' => $this->topics,
             'terms' => TermResource::collection($this->terms),
+            'exams' => $this->exams
         ];
     }
 }

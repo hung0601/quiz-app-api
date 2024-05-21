@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('test_questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('test_id');
-            $table->unsignedBigInteger('term_referent_id');
+            $table->unsignedBigInteger('term_referent_id')->nullable();
             $table->boolean("has_audio")->default(false);
             $table->text("audio_text")->nullable();
             $table->string("audio_lang")->nullable();
