@@ -9,10 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 class StudySet extends Model
 {
     use HasFactory;
+
+    public const VIEW_ACCESS_LEVEL = 0;
+    public const EDIT_ACCESS_LEVEL = 1;
+    public const PUBLIC_ACCESS_TYPE = 0;
+    public const SHARE_WITH_FOLLOWER_ACCESS_TYPE = 1;
+    public const PRIVATE_ACCESS_TYPE = 2;
     protected $fillable=[
         'title',
         'description',
         'image_url',
+        'access_type'
     ];
 
     public function owner() {
@@ -36,5 +43,9 @@ class StudySet extends Model
 
     public function votes(){
         return $this->hasMany(Vote::class,'study_set_id','id');
+    }
+
+    public function members(){
+        return $this->belongsToMany(User::class, 'study_set_access')->withPivot('access_level');
     }
 }

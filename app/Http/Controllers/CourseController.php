@@ -25,6 +25,7 @@ class CourseController extends Controller
 
         return $courses;
     }
+
     public function show($id)
     {
         $course= Course::with(['owner','study_sets','enrollments.user'])->find($id);

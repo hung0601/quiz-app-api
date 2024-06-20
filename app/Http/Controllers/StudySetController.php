@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\StudySet\StudySetDetailResource;
+use App\Http\Resources\User\MemberResource;
 use App\Models\StudySet;
 use App\Models\StudySetTopic;
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use function response;
 
 class StudySetController extends Controller
@@ -17,8 +19,13 @@ class StudySetController extends Controller
         $enrollmentSets = StudySet::with(['owner','topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
-            ->whereHas('course', function (Builder $query) use ($user) {
-                $query->whereHas('enrollments', function (Builder $query) use ($user) {
+            ->where(function (Builder $builder) use ($user) {
+                $builder->whereHas('course', function (Builder $query) use ($user) {
+                    $query->whereHas('enrollments', function (Builder $query) use ($user) {
+                        $query->where('user_id', $user->id);
+                    });
+                })
+                ->orWhereHas('members', function (Builder $query) use ($user) {
                     $query->where('user_id', $user->id);
                 });
             });
@@ -45,7 +52,7 @@ class StudySetController extends Controller
 
     public function show(Request $request, string $id)
     {
-        $studySet = StudySet::with(['owner', 'topics','exams'])
+        $studySet = StudySet::with(['owner', 'topics', 'exams'])
             ->with(['terms' => function ($query) use ($request) {
                 $query->with(['study_results' => function ($query) use ($request) {
                     $query->where('user_id', $request->user()->id);
@@ -53,8 +60,8 @@ class StudySetController extends Controller
             }])
             ->withCount('votes as vote_count')
             ->withAvg('votes', 'star')->find($id);
-        if($request->user()->id != $studySet->owner_id) $studySet->permission=false;
-        else $studySet->permission=true;
+        if ($request->user()->id != $studySet->owner_id) $studySet->permission = false;
+        else $studySet->permission = true;
         return response()->json(new StudySetDetailResource($studySet));
     }
 
@@ -82,27 +89,101 @@ class StudySetController extends Controller
             $set->title = $request->title;
             $set->description = $request->description;
             $set->owner_id = $user->id;
-            $set->image_url=null;
-            if($request->term_lang) $set->term_lang = $request->term_lang;
-            if($request->def_lang) $set->def_lang = $request->def_lang;
-            $image= $request->file('image');
-            if(!empty($image)){
-                $path=$image->move('storage/study_sets', $image->hashName());
-                $image_url= asset($path);
-                $set->image_url=$image_url;
+            $set->image_url = null;
+            if ($request->term_lang) $set->term_lang = $request->term_lang;
+            if ($request->def_lang) $set->def_lang = $request->def_lang;
+            $image = $request->file('image');
+            if (!empty($image)) {
+                $path = $image->move('storage/study_sets', $image->hashName());
+                $image_url = asset($path);
+                $set->image_url = $image_url;
             }
             if ($request->course_id) $set->course_id = (int)$request->course_id;
             $set->save();
-            if(!empty($request->topic_ids) && count($request->topic_ids)>0){
-                foreach ($request->topic_ids as $topic_id){
+            if (!empty($request->topic_ids) && count($request->topic_ids) > 0) {
+                foreach ($request->topic_ids as $topic_id) {
                     StudySetTopic::create([
-                        'topic_id'=>$topic_id,
-                        'study_set_id'=>$set->id,
+                        'topic_id' => $topic_id,
+                        'study_set_id' => $set->id,
                     ]);
                 }
             }
             return $set->load(['owner'])
                 ->loadCount('terms as term_number');
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function invite(Request $request, $setId){
+        try {
+            $request->validate([
+               'user_id' => 'required|integer|exists:users,id',
+                'access_level' => 'required|integer|in:0,1',
+            ]);
+            $user = $request->user();
+            $sets = StudySet::where('owner_id', $user->id)
+                ->findOrFail($setId);
+            $result = DB::table('study_set_access')->updateOrInsert(
+                [
+                    'study_set_id' => $setId,
+                    'user_id' => $request->user_id,
+                ],
+                [
+                    'access_level' => $request->access_level,
+                ]
+            );
+            return response()->json($result);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function removeMember(Request $request, $setId, $userId)
+    {
+        try {
+            $user = $request->user();
+            $sets = StudySet::where('owner_id', $user->id)
+                ->findOrFail($setId);
+            $result = DB::table('study_set_access')
+                ->where('study_set_id', $setId)
+                ->where('user_id', $userId)
+                ->delete();
+            return response()->json($result);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function leave(Request $request, $setId)
+    {
+        try {
+            $user = $request->user();
+            $result = DB::table('study_set_access')
+                ->where('study_set_id', $setId)
+                ->where('user_id', $user->id)
+                ->delete();
+            return response()->json($result);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function getMembers(Request $request, $setId)
+    {
+        try {
+            $user = $request->user();
+
+            $set = StudySet::findOrFail($setId);
+            return response()->json(MemberResource::collection($set->members));
         } catch (\Exception $error) {
             return response()->json([
                 'message' => $error->getMessage(),

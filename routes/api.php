@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\InviteRequestController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudySetController;
@@ -10,7 +11,6 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoteController;
-use App\Models\StudySetTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,10 +30,11 @@ Route::get('/test', function (Request $request) {
 })->name('test');
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('user')->group(function () {
-        Route::get('/profile', [UserController::class, 'profile'])
-            ->name('user.profile');
-            Route::get('/top_creators', [UserController::class, 'topCreators'])
-            ->name('user.top_creators');
+        Route::get('/me', [UserController::class, 'me']);
+        Route::get('/top_creators', [UserController::class, 'topCreators']);
+        Route::get('/{id}', [UserController::class, 'profile']);
+        Route::get('/{id}/courses', [UserController::class, 'getCourses']);
+        Route::get('/{id}/sets', [UserController::class, 'getSets']);
     });
 
     //Exam
@@ -80,12 +81,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('study_sets')->group(function () {
         Route::get('/', [StudySetController::class, 'index'])
             ->name('study_sets.list');
-            Route::get('/created_sets', [StudySetController::class, 'getCreatedSet'])
+        Route::get('/created_sets', [StudySetController::class, 'getCreatedSet'])
             ->name('study_sets.created_sets');
+        Route::post('/{id}/invite', [StudySetController::class, 'invite']);
+        Route::get('/{id}/members', [StudySetController::class, 'getMembers']);
         Route::get('/{id}', [StudySetController::class, 'show'])
             ->name('study_sets.show');
         Route::post('/', [StudySetController::class, 'store'])
             ->name('study_sets.store');
+        Route::delete('/{setId}/remove/{userId}', [StudySetController::class, 'removeMember']);
+        Route::delete('/{setId}/leave', [StudySetController::class, 'leave']);
         Route::delete('/{id}', [StudySetController::class, 'delete'])
             ->name('study_sets.delete');
     });
@@ -105,18 +110,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('courses.invite');
         Route::post('/accept_invite', [InviteRequestController::class, 'acceptInvite'])
             ->name('courses.accept_invite');
-
     });
+
+    Route::prefix('followers')->group(function () {
+        Route::get('/following', [FollowController::class, 'getFollowing']);
+        Route::get('/', [FollowController::class, 'index']);
+        Route::post('/{following_id}', [FollowController::class, 'follow']);
+        Route::delete('/{following_id}', [FollowController::class, 'unFollow']);
+    });
+
     Route::get('/search_users', [InviteRequestController::class, 'searchUser'])
-            ->name('courses.searchUser');
+        ->name('courses.searchUser');
     Route::get('/get_invites', [InviteRequestController::class, 'getInvite'])
-            ->name('courses.getInvite');
+        ->name('courses.getInvite');
     Route::get('/search', [SearchController::class, 'index'])
-            ->name('search.index');
+        ->name('search.index');
 
     Route::prefix('terms')->group(function () {
-        Route::post('/', [TermController::class, 'store'])
-        ->name('terms.store');
+        Route::post('/', [TermController::class, 'store']);
         Route::post('/multi_save', [TermController::class, 'multiStore'])
             ->name('terms.store');
         Route::put('/', [TermController::class, 'update'])
@@ -132,5 +143,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // });
 
 Route::post('/login', [AuthController::class, 'login'])
-        ->name('auth.login');
+    ->name('auth.login');
 

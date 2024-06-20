@@ -19,6 +19,7 @@ class StudySetDetailResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'access_type' => $this->access_type,
             'image_url' => $this->image_url,
             'term_lang' => $this->term_lang,
             'def_lang' => $this->def_lang,
