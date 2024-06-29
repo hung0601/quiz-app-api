@@ -69,4 +69,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'user_followers', 'following_id', 'user_id');
     }
+
+    public function joinedStudySets()
+    {
+        return $this->belongsToMany(StudySet::class, 'study_set_access');
+    }
 }

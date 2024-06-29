@@ -16,7 +16,7 @@ class StudySetController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $enrollmentSets = StudySet::with(['owner','topics'])
+        $enrollmentSets = StudySet::with(['owner', 'topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
             ->where(function (Builder $builder) use ($user) {
@@ -25,11 +25,11 @@ class StudySetController extends Controller
                         $query->where('user_id', $user->id);
                     });
                 })
-                ->orWhereHas('members', function (Builder $query) use ($user) {
-                    $query->where('user_id', $user->id);
-                });
+                    ->orWhereHas('members', function (Builder $query) use ($user) {
+                        $query->where('user_id', $user->id);
+                    });
             });
-        $studySets = StudySet::with(['owner','topics'])
+        $studySets = StudySet::with(['owner', 'topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
             ->where('owner_id', $user->id)
@@ -60,8 +60,27 @@ class StudySetController extends Controller
             }])
             ->withCount('votes as vote_count')
             ->withAvg('votes', 'star')->find($id);
-        if ($request->user()->id != $studySet->owner_id) $studySet->permission = false;
-        else $studySet->permission = true;
+        $studySet->permission = StudySet::NONE_ACCESS_LEVEL;
+        $accessType = DB::table('study_set_access')
+            ->where('user_id', $request->user()->id)
+            ->where('study_set_id', $id)
+            ->first();
+        if ($accessType) $studySet->permission = $accessType->access_level;
+        else $studySet->permission = StudySet::NONE_ACCESS_LEVEL;
+        if ($request->user()->id == $studySet->owner_id)
+            $studySet->permission = StudySet::OWNER_ACCESS_LEVEL;
+
+        if ($studySet->access_type == StudySet::PRIVATE_ACCESS_TYPE
+            && $studySet->permission == StudySet::NONE_ACCESS_LEVEL) {
+            throw new \Exception("Forbidden access to studySet");
+        } else if ($studySet->access_type == StudySet::SHARE_WITH_FOLLOWER_ACCESS_TYPE
+            && $studySet->permission == StudySet::NONE_ACCESS_LEVEL) {
+            $follow = DB::table('user_followers')
+                ->where('following', $studySet->owner_id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+            if (!$follow) throw new \Exception("Forbidden access to studySet");
+        }
         return response()->json(new StudySetDetailResource($studySet));
     }
 
@@ -117,10 +136,11 @@ class StudySetController extends Controller
         }
     }
 
-    public function invite(Request $request, $setId){
+    public function invite(Request $request, $setId)
+    {
         try {
             $request->validate([
-               'user_id' => 'required|integer|exists:users,id',
+                'user_id' => 'required|integer|exists:users,id',
                 'access_level' => 'required|integer|in:0,1',
             ]);
             $user = $request->user();

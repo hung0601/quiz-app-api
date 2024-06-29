@@ -105,4 +105,26 @@ class InviteRequestController extends Controller
             ->diff($member);
         return $search;
     }
+
+    public function searchSetUser(Request $request)
+    {
+        $request->validate([
+            'study_set_id' => 'required',
+            'search' => 'required',
+        ]);
+
+        $owner = User::whereHas('study_sets', function (Builder $query) use ($request) {
+            $query->where('id', $request->study_set_id);
+        });
+        $member = User::whereHas('joinedStudySets', function (Builder $query) use ($request) {
+            $query->where('study_set_id', $request->study_set_id);
+        })->union($owner)->get();
+
+        $search = User::where('email', 'LIKE', '%' . $request->search . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->search . '%')
+            ->get();
+        $search = $search
+            ->diff($member);
+        return $search;
+    }
 }

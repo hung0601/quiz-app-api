@@ -12,6 +12,8 @@ class StudySet extends Model
 
     public const VIEW_ACCESS_LEVEL = 0;
     public const EDIT_ACCESS_LEVEL = 1;
+    public const OWNER_ACCESS_LEVEL = 2;
+    public const NONE_ACCESS_LEVEL = 3;
     public const PUBLIC_ACCESS_TYPE = 0;
     public const SHARE_WITH_FOLLOWER_ACCESS_TYPE = 1;
     public const PRIVATE_ACCESS_TYPE = 2;

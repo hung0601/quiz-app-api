@@ -119,8 +119,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{following_id}', [FollowController::class, 'unFollow']);
     });
 
-    Route::get('/search_users', [InviteRequestController::class, 'searchUser'])
-        ->name('courses.searchUser');
+    Route::get('/search_users', [InviteRequestController::class, 'searchUser']);
+    Route::get('/search_set_users', [InviteRequestController::class, 'searchSetUser']);
     Route::get('/get_invites', [InviteRequestController::class, 'getInvite'])
         ->name('courses.getInvite');
     Route::get('/search', [SearchController::class, 'index'])
