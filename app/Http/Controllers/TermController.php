@@ -6,6 +6,7 @@ use App\Models\Term;
 use Illuminate\Http\Request;
 use App\Models\StudySet;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use function array_map;
 use function var_dump;
 
@@ -13,14 +14,12 @@ class TermController extends Controller
 {
     public function store(Request $request){
         try{
-            $user= $request->user();
             $request->validate([
                 'term' => 'required',
                 'definition' => 'required',
                 'study_set_id'=>'required',
                 'image'=>'mimes:jpeg,png,jpg,gif',
             ]);
-            StudySet::where('owner_id',$user->id)->findOrFail((int) $request->study_set_id);
             $term= new Term();
             $image= $request->file('image');
             if(!empty($image)){
@@ -41,14 +40,12 @@ class TermController extends Controller
     }
     public function multiStore(Request $request){
         try{
-            $user= $request->user();
             $request->validate([
                 'study_set_id'=>'required',
                 'terms' => 'required|array|min:1',
                 'terms.*.term' => 'required|string',
                 'terms.*.definition' => 'required|string'
             ]);
-            StudySet::where('owner_id',$user->id)->findOrFail((int) $request->study_set_id);
             $studySetId = $request->input('study_set_id');
             $terms = $request->input('terms');
             $termInsertData= array_map(function ($term) use ($studySetId) {
@@ -75,33 +72,55 @@ class TermController extends Controller
             ],400);
         }
     }
-    public function update(Request $request){
+    public function update(Request $request, $id){
         try{
             $user= $request->user();
             $request->validate([
-                'term_id'=>'required|numeric',
-                'term' => 'required',
-                'definition' => 'required',
-                'image'=>'mimes:jpeg,png,jpg,gif',
+                'term' => 'required|string',
+                'definition' => 'required|string',
+                'image'=>'mimes:jpeg,png,jpg,gif|nullable',
             ]);
-            $term= Term::findOrFail($request->term_id);
-            if($term->study_set->owner_id != $user->id){
-                return response()->json([
-                    'message' => 'Unauthorized',
-                ],401);
-            }
-            $image= $request->file('image');
-            if(empty($request->image_url))  $term->image_url=null;
-            if(!empty($image)){
-                $path=$image->move('storage/terms', $image->hashName());
-                $image_url= asset($path);
-                $term->image_url=$image_url;
+            $term= Term::findOrFail($id);
+            if($request->has("image")) {
+                $image = $request->file('image');
+                if ($term->image_url) {
+                    $relativePath = str_replace(url('/') . '/', '', $term->image_url);
+                    if (File::exists($relativePath)) {
+                        File::delete($relativePath);
+                    }
+                }
+                if (!empty($image)) {
+                    $path = $image->move('storage/terms', $image->hashName());
+                    $image_url = asset($path);
+                    $term->image_url = $image_url;
+                }else{
+                    $term->image_url = null;
+                }
             }
             $term->term= $request->term;
             $term->definition= $request->definition;
             $term->save();
             unset($term->study_set);
             return $term;
+        }catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ],400);
+        }
+    }
+
+    public function destroy(Request $request, $id){
+        try{
+            $user= $request->user();
+            $term= Term::findOrFail($id);
+            if ($term->image_url) {
+                $relativePath = str_replace(url('/') . '/', '', $term->image_url);
+                if (File::exists($relativePath)) {
+                    File::delete($relativePath);
+                }
+            }
+            $term->delete();
+            return true;
         }catch (\Exception $error) {
             return response()->json([
                 'message' => $error->getMessage(),

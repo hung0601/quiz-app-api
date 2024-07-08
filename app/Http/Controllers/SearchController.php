@@ -21,8 +21,11 @@ class SearchController extends Controller
         $sets = StudySet::with(['owner', 'topics'])
             ->withAvg('votes', 'star')
             ->withCount('terms as term_number')
-            ->where('title', 'LIKE', '%' . $request->search . '%')
-            ->orWhere('description', 'LIKE', '%' . $request->search . '%')
+            ->where(function ($query) use ($request) {
+                $query->where('title', 'LIKE', '%' . $request->search . '%')
+                    ->orWhere('description', 'LIKE', '%' . $request->search . '%');
+            })
+            ->where('access_type', '!=', StudySet::PRIVATE_ACCESS_TYPE)
             ->get();
         $creators = User::withCount('courses')->withCount('study_sets')->orderBy('study_sets_count', 'desc')
             ->where('name', 'LIKE', '%' . $request->search . '%')->get();

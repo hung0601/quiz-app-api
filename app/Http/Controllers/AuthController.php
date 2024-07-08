@@ -32,7 +32,7 @@ class AuthController extends Controller
             }
 
             $tokenResult = $user->createToken('authToken')->plainTextToken;
-            $user->loadCount(['courses','study_sets']);
+            $user->loadCount(['courses','study_sets','followers', 'followings']);
             return response()->json([
                 'status_code' => 200,
                 'access_token' => $tokenResult,

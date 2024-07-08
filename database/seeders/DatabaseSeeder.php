@@ -14,15 +14,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            UserSeeder::class,
+            CourseSeeder::class,
+            EnrollmentSeeder::class,
+            StudySetSeeder::class,
+            TermSeeder::class,
+            TopicSeeder::class,
+            TestSeeder::class,
+        ]);
         User::factory()->count(20)->create();
-//        $this->call([
-//            UserSeeder::class,
-//            CourseSeeder::class,
-//            EnrollmentSeeder::class,
-//            StudySetSeeder::class,
-//            TermSeeder::class,
-//            TopicSeeder::class,
-//            TestSeeder::class,
-//        ]);
     }
 }

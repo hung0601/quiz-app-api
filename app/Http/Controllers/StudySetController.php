@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StudySet\StoreSetRequest;
+use App\Http\Requests\StudySet\UpdateSetRequest;
 use App\Http\Resources\StudySet\StudySetDetailResource;
 use App\Http\Resources\User\MemberResource;
 use App\Models\StudySet;
@@ -9,7 +11,11 @@ use App\Models\StudySetTopic;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use function asset;
 use function response;
+use function str_replace;
+use function url;
 
 class StudySetController extends Controller
 {
@@ -87,23 +93,14 @@ class StudySetController extends Controller
     public function delete($id)
     {
         $studySet = StudySet::find($id);
-        $studySet->delete();
-        return;
+        return $studySet->delete();
     }
 
-    public function store(Request $request)
+    public function store(StoreSetRequest $request)
     {
+        DB::beginTransaction();
         try {
             $user = $request->user();
-            $request->validate([
-                'title' => 'required',
-                'description' => 'required',
-                'image' => 'mimes:jpeg,png,jpg,gif',
-                'term_lang' => 'string|nullable',
-                'def_lang' => 'string|nullable',
-                'topic_ids' => 'array',
-                'topic_ids.*' => 'integer|exists:topics,id',
-            ]);
             $set = new StudySet;
             $set->title = $request->title;
             $set->description = $request->description;
@@ -111,6 +108,7 @@ class StudySetController extends Controller
             $set->image_url = null;
             if ($request->term_lang) $set->term_lang = $request->term_lang;
             if ($request->def_lang) $set->def_lang = $request->def_lang;
+            if ($request->access_type) $set->access_type = $request->access_type;
             $image = $request->file('image');
             if (!empty($image)) {
                 $path = $image->move('storage/study_sets', $image->hashName());
@@ -127,9 +125,64 @@ class StudySetController extends Controller
                     ]);
                 }
             }
+            DB::commit();
+
             return $set->load(['owner'])
                 ->loadCount('terms as term_number');
         } catch (\Exception $error) {
+            DB::rollBack();
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function update(UpdateSetRequest $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $set = StudySet::find($id);
+            if ($request->title) $set->title = $request->title;
+            if ($request->description) $set->description = $request->description;
+            if ($request->term_lang) $set->term_lang = $request->term_lang;
+            if ($request->def_lang) $set->def_lang = $request->def_lang;
+            if ($request->access_type) $set->access_type = $request->access_type;
+
+            if($request->has("image")) {
+                $image = $request->file('image');
+                if ($set->image_url) {
+                    $relativePath = str_replace(url('/') . '/', '', $set->image_url);
+                    if (File::exists($relativePath)) {
+                        File::delete($relativePath);
+                    }
+                }
+                if (!empty($image)) {
+                    $path = $image->move('storage/study_sets', $image->hashName());
+                    $image_url = asset($path);
+                    $set->image_url = $image_url;
+                }else{
+                    $set->image_url = null;
+                }
+            }
+            $set->save();
+            if ($request->has('topic_ids')) {
+                DB::table('study_set_topics')->where('study_set_id', $set->id)->delete();
+                if(!empty($request->topic_ids) && count($request->topic_ids) > 0) {
+                    foreach ($request->topic_ids as $topic_id) {
+                        StudySetTopic::create([
+                            'topic_id' => $topic_id,
+                            'study_set_id' => $set->id,
+                        ]);
+                    }
+                }
+            }
+            DB::commit();
+
+            return $set->load(['owner'])
+                ->loadCount('terms as term_number')
+                ->load('topics');
+        } catch (\Exception $error) {
+            DB::rollBack();
             return response()->json([
                 'message' => $error->getMessage(),
             ], 400);

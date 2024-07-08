@@ -79,16 +79,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('topic.store');
     });
     Route::prefix('study_sets')->group(function () {
-        Route::get('/', [StudySetController::class, 'index'])
-            ->name('study_sets.list');
-        Route::get('/created_sets', [StudySetController::class, 'getCreatedSet'])
-            ->name('study_sets.created_sets');
+        Route::get('/', [StudySetController::class, 'index']);
+        Route::get('/created_sets', [StudySetController::class, 'getCreatedSet']);
         Route::post('/{id}/invite', [StudySetController::class, 'invite']);
         Route::get('/{id}/members', [StudySetController::class, 'getMembers']);
         Route::get('/{id}', [StudySetController::class, 'show'])
             ->name('study_sets.show');
-        Route::post('/', [StudySetController::class, 'store'])
-            ->name('study_sets.store');
+        Route::post('/', [StudySetController::class, 'store']);
+        Route::put('/{id}', [StudySetController::class, 'update']);
         Route::delete('/{setId}/remove/{userId}', [StudySetController::class, 'removeMember']);
         Route::delete('/{setId}/leave', [StudySetController::class, 'leave']);
         Route::delete('/{id}', [StudySetController::class, 'delete'])
@@ -126,12 +124,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])
         ->name('search.index');
 
-    Route::prefix('terms')->group(function () {
+    Route::middleware('checkAccessPermission')->prefix('terms')->group(function () {
         Route::post('/', [TermController::class, 'store']);
-        Route::post('/multi_save', [TermController::class, 'multiStore'])
-            ->name('terms.store');
-        Route::put('/', [TermController::class, 'update'])
-            ->name('terms.update');
+        Route::post('/multi_save', [TermController::class, 'multiStore']);
+        Route::delete('/{id}', [TermController::class, 'destroy']);
+        Route::put('/{id}', [TermController::class, 'update']);
     });
 });
 
