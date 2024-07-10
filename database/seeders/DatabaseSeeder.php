@@ -16,11 +16,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            TopicSeeder::class,
             CourseSeeder::class,
             EnrollmentSeeder::class,
             StudySetSeeder::class,
             TermSeeder::class,
-            TopicSeeder::class,
             TestSeeder::class,
         ]);
         User::factory()->count(20)->create();

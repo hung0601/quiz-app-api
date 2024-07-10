@@ -58,6 +58,7 @@ class StudySetController extends Controller
 
     public function show(Request $request, string $id)
     {
+        try {
         $studySet = StudySet::with(['owner', 'topics', 'exams'])
             ->with(['terms' => function ($query) use ($request) {
                 $query->with(['study_results' => function ($query) use ($request) {
@@ -66,13 +67,20 @@ class StudySetController extends Controller
             }])
             ->withCount('votes as vote_count')
             ->withAvg('votes', 'star')->find($id);
+
+        if(!$studySet){
+            return response()->json([
+                'message' => 'Study Set not found.',
+            ], 400);
+        }
+
         $studySet->permission = StudySet::NONE_ACCESS_LEVEL;
         $accessType = DB::table('study_set_access')
             ->where('user_id', $request->user()->id)
             ->where('study_set_id', $id)
             ->first();
         if ($accessType) $studySet->permission = $accessType->access_level;
-        else $studySet->permission = StudySet::NONE_ACCESS_LEVEL;
+
         if ($request->user()->id == $studySet->owner_id)
             $studySet->permission = StudySet::OWNER_ACCESS_LEVEL;
 
@@ -87,7 +95,13 @@ class StudySetController extends Controller
                 ->first();
             if (!$follow) throw new \Exception("Forbidden access to studySet");
         }
+
         return response()->json(new StudySetDetailResource($studySet));
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => $error->getMessage(),
+            ], 400);
+        }
     }
 
     public function delete($id)

@@ -15,14 +15,14 @@ class UserController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        return User::withCount(['courses', 'study_sets', 'followers'])
+        return User::withCount(['courses', 'study_sets', 'followers', 'followings'])
             ->find($user->id);
     }
 
     public function profile(Request $request, $userId)
     {
         $user = $request->user();
-        $result = User::withCount(['courses', 'study_sets', 'followers'])
+        $result = User::withCount(['courses', 'study_sets', 'followers', 'followings'])
             ->withCount(['followers as is_following' => function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             }])

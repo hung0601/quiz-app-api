@@ -24,6 +24,7 @@ class CreatorResource extends JsonResource
             'courses_count' => $this->courses_count ?? 0,
             'study_sets_count' => $this->study_sets_count ?? 0,
             'followers_count' => $this->followers_count ?? 0,
+            'followings_count' => $this->followings_count ?? 0,
             'is_following' => $this->is_following > 0 ? true : false,
         ];
     }

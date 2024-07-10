@@ -54,7 +54,7 @@ class TermSeeder extends Seeder
                 'study_set_id' => 1,
                 'term' => 'Koala',
                 'definition' => 'Gấu túi Úc',
-                'image_url' => asset('storage/terms/term11.jpg')
+                'image_url' => asset('storage/terms/term11.jpeg')
             ],
             [
                 'study_set_id' => 1,
@@ -86,6 +86,44 @@ class TermSeeder extends Seeder
                 'definition'=>'Hoa cúc',
                 'image_url' => asset('storage/terms/term8.jpg')
             ],
+
+
+            [
+                'study_set_id' => 2,
+                'term' => 'Lily',
+                'definition' => 'Hoa ly',
+                'image_url' => asset('storage/terms/term21.webp')
+            ],
+            [
+                'study_set_id' => 2,
+                'term' => 'Daffodil',
+                'definition' => 'Hoa thủy tiên',
+                'image_url' => asset('storage/terms/term22.jpeg')
+            ],
+            [
+                'study_set_id' => 2,
+                'term' => 'Daisy',
+                'definition' => 'Hoa cúc dại',
+                'image_url' => asset('storage/terms/term23.jpg')
+            ],
+            [
+                'study_set_id' => 2,
+                'term' => 'Lavender',
+                'definition' => 'Hoa oải hương',
+                'image_url' => asset('storage/terms/term24.jpg')
+            ],
+            [
+                'study_set_id' => 2,
+                'term' => 'Peony',
+                'definition' => 'Hoa mẫu đơn',
+                'image_url' => asset('storage/terms/term25.jpg')
+            ],
+            [
+                'study_set_id' => 2,
+                'term' => 'Hydrangea',
+                'definition' => 'Hoa cẩm tú cầu',
+                'image_url' => asset('storage/terms/term26.jpeg')
+            ]
         ]);
     }
 }

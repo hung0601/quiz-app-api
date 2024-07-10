@@ -16,11 +16,15 @@ class TopicSeeder extends Seeder
         DB::table('topics')->insert([
             // Chủ đề về ngôn ngữ
             ["name" => "english"],
+            ["name" => "japanese"],
+            ["name" => "vietnamese"],
+            ["name" => "animals"],
+            ["name" => "nature"],
+            ["name" => "ocean"],
             ["name" => "spanish"],
             ["name" => "french"],
             ["name" => "german"],
             ["name" => "chinese"],
-            ["name" => "japanese"],
             ["name" => "korean"],
             ["name" => "arabic"],
             ["name" => "portuguese"],
@@ -31,13 +35,11 @@ class TopicSeeder extends Seeder
             ["name" => "bengali"],
             ["name" => "urdu"],
             ["name" => "turkish"],
-            ["name" => "vietnamese"],
             ["name" => "indonesian"],
             ["name" => "thai"],
             ["name" => "malay"],
 
             // Chủ đề khác
-            ["name" => "animals"],
             ["name" => "mathematics"],
             ["name" => "history"],
             ["name" => "art"],
